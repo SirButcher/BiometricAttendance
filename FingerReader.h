@@ -13,7 +13,7 @@ void SetupReader();
 
 void EnrollFinger(uint8_t);
 
-uint8_t getFingerprintID();
+int getFingerprintID();
 
 #endif
 

@@ -37,6 +37,10 @@ char netIsFail[32] =	" Net is tested    FATAL ERROR! ";
 
 char systemStdb[32] =	"System is ready Use the reader ";
 								//		 |
+
+int userID = -1;
+
+
 void setup()
 {
 	// First of all, open the serial interface
@@ -65,22 +69,34 @@ void setup()
 		while (1) { delay(1); }
 	}
 
-	delay(2000);
-
 	WriteToScreen(&systemStdb[0]);
-
-	delay(2000);
-
-
-
-	getFingerprintID();
-
-	//EnrollFinger(2);
 }
 
 void loop()
 {
+	// Okay, in this main loop we will have two task:
+	// 1. Check if we have a finger on the reader
+	// 2. Check if the user pressed both the buttons (entering to the Enroll)
 
-  /* add main program code here */
+	// This method will return with either -1 (no finger on the screen)
+	// or with the user's ID.
+
+	userID = getFingerprintID();
+
+	if (userID > -1)
+	{
+		// We got a user data!
+		// Now wait for the Red or Green button.
+
+		Serial.print("Found a fingerprint with ID ");
+		Serial.println(userID);
+	}
+	else if (userID == -2)
+	{	// Error happened!
+		WriteToScreen(&systemStdb[0]);
+	}
+
+	// Rest a little.
+	delay(50);
 
 }

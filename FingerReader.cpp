@@ -17,11 +17,11 @@ int status = -1;
 char converted[3] = "  ";
 
 char unknowError[32] =		"  System error!  Please restart";
-char imgError[32] =			"   Image error!     Try again  ";
+char imgError[32] =			"   Image error!    Try again   ";
 char imgMsmMathc[32] =		" Image not match    Try again  ";
+char notFound[32] =			" User not found    Try again   ";
 
 char imageTook[32] =		"   Image taken   remove finger ";
-char enrollStnb[32] =		"  Place finger   on the reader ";
 char enrollConfirm[32] =	" Put same finger on the reader ";
 char userStored[32] =		"  Success! User  stored. ID:   ";
 
@@ -49,8 +49,6 @@ void SetupReader()
 void EnrollFinger(uint8_t bioID)
 {
 	status = -1;
-
-	WriteToScreen(&enrollStnb[0]);
 
 	// First enroll round.
 	// We have to wait until we get back a "OK" 
@@ -292,94 +290,67 @@ void EnrollFinger(uint8_t bioID)
 	delay(5000);
 }
 
-uint8_t getFingerprintID()
+int getFingerprintID()
 {
-	WriteToScreen(&enrollStnb[0]);
-
 	status = -1;
 
-	while (status != FINGERPRINT_OK) {
+	status = finger.getImage();
 
-		status = finger.getImage();
-
-		switch (status) {
-		case FINGERPRINT_OK:
-			Serial.println("Image taken");
-			break;
-		case FINGERPRINT_NOFINGER:
-			// No finger
-			break;
-		case FINGERPRINT_PACKETRECIEVEERR:
-			WriteToScreen(&imgError[0]);
-			delay(2000);
-			return getFingerprintID();
-		case FINGERPRINT_IMAGEFAIL:
-			WriteToScreen(&imgError[0]);
-			delay(2000);
-			return getFingerprintID();
-		default:
-			WriteToScreen(&imgError[0]);
-			delay(2000);
-			return getFingerprintID();
-		}
+	switch (status) {
+	case FINGERPRINT_OK:
+		Serial.println("Image taken");
+		break;
+	case FINGERPRINT_NOFINGER:
+		return -1;
+	case FINGERPRINT_PACKETRECIEVEERR:
+		WriteToScreen(&imgError[0]);
+		delay(2000);
+		return -2;
+	case FINGERPRINT_IMAGEFAIL:
+		WriteToScreen(&imgError[0]);
+		delay(2000);
+		return -2;
+	default:
+		WriteToScreen(&imgError[0]);
+		delay(2000);
+		return -2;
 	}
 
 	// OK success!
 
 	status = finger.image2Tz();
 
-	switch (status) {
-	case FINGERPRINT_OK:
-		Serial.println("Image converted");
-		break;
-	case FINGERPRINT_IMAGEMESS:
+	if (status != FINGERPRINT_OK) {
+		// Error happened during the conversion
+
 		WriteToScreen(&imgError[0]);
 		delay(2000);
-		return getFingerprintID();
-	case FINGERPRINT_PACKETRECIEVEERR:
-		WriteToScreen(&imgError[0]);
-		delay(2000);
-		return getFingerprintID();
-	case FINGERPRINT_FEATUREFAIL:
-		WriteToScreen(&imgError[0]);
-		delay(2000);
-		return getFingerprintID();
-	case FINGERPRINT_INVALIDIMAGE:
-		WriteToScreen(&imgError[0]);
-		delay(2000);
-		return getFingerprintID();
-	default:
-		WriteToScreen(&imgError[0]);
-		delay(2000);
-		return getFingerprintID();
+		return -2;
 	}
 
 	// OK converted!
 	status = finger.fingerFastSearch();
 
-	if (status == FINGERPRINT_OK) {
-		Serial.println("Found a print match!");
-	}
-	else if (status == FINGERPRINT_PACKETRECIEVEERR) {
+	switch (status)
+	{
+	case FINGERPRINT_OK:
+		// found a match!
+		Serial.print("Found ID #"); Serial.print(finger.fingerID);
+		Serial.print(" with confidence of "); Serial.println(finger.confidence);
+		return finger.fingerID;
+
+	case FINGERPRINT_NOTFOUND:
+		WriteToScreen(&notFound[0]);
+		delay(2000);
+		return -1;
+
+	default:
+		// We can skip the different error types
+		// as for us all of them mean one thing:
+		// The operation is failed.
 		WriteToScreen(&imgError[0]);
 		delay(2000);
-		return getFingerprintID();
+		return -2;
 	}
-	else if (status == FINGERPRINT_NOTFOUND) {
-		WriteToScreen(&imgMsmMathc[0]);
-		delay(2000);
-		return getFingerprintID();
-	}
-	else {
-		WriteToScreen(&imgError[0]);
-		delay(2000);
-		return getFingerprintID();
-	}
-
-	// found a match!
-	Serial.print("Found ID #"); Serial.print(finger.fingerID);
-	Serial.print(" with confidence of "); Serial.println(finger.confidence);
-
-	return finger.fingerID;
 
 }
