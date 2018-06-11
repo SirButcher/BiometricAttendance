@@ -28,15 +28,17 @@ byte mac[] = { 0x2C, 0xF7, 0xF1, 0x08, 0x03, 0x8D }; // From the sticker
 
 char address[48] = "/Entry/BioEntry.ashx?PSW=z3He8mMKwSw7yGch&TYPE=";
 char testAddress[18] = "/Entry/Check.ashx";
-char bioID[8] = "&BIOID=";
-char connectionVersion[10] = " HTTP/1.1";
+char bioIDParam[8] = "&BIOID=";
 
+char connectionVersion[10] = " HTTP/1.1";
 
 char newUserLink[4] = "NEW";
 char confirmLink[8] = "NEWDONE";
-char checkLink[6] = "CHECK";	// Last char needs to be replaced with the ID! - Char 60
-char loginLink[6] = "LOGIN";	// Last char needs to be replaced with the ID! - Char 60
-char logoutLink[7] = "LOGOUT";  // Last char needs to be replaced with the ID! - Char 61
+char checkLink[6] = "CHECK";
+char loginLink[6] = "LOGIN";
+char logoutLink[7] = "LOGOUT";
+
+char dataStartMark = '@';
 
 EthernetClient client;
 
@@ -67,8 +69,90 @@ int GetNewID()
 	return 0;
 }
 
-void GetCheck(int, char *)
+int GetCheck(int bioID, char returnData[32])
 {
+	if (client.connect(serverIP, port))
+	{
+		// Connect to the server
+		// and gather a response string
+		// for the given client biOID
+
+		Serial.println("Getting CHECK data");
+
+		// Make a HTTP request:
+		client.print("GET ");
+		client.print(address);
+		client.print(checkLink);
+		client.print(bioIDParam);
+		client.print(bioID);
+
+		client.println(connectionVersion);
+		client.print("Host: ");
+		client.println(server);
+
+		client.println("Connection: close");
+		client.println();
+
+
+		// Read the data while it is available
+		int counter = -2;
+
+		do
+		{
+			// if there are incoming bytes available
+			// from the server, read them and print them:
+			if (client.available()) {
+				char c = client.read();
+
+				if (counter >= 0)
+				{
+					Serial.print(c);
+					returnData[counter] = c;
+
+					counter++;
+				}
+	
+				if (c == dataStartMark)
+				{
+					// Data is beginning!
+					// Time to save it into the char array.
+
+					// In this case we are expecting a Total of 32 character
+					// No more - no less.
+
+					// Mark the beginning the NEXT character 
+					// will be useful data!
+					counter = 0;
+				}
+
+				if (counter == 32)
+				{
+					client.stop();
+
+					Serial.println("CHECK Data fully read!");
+					return 1;
+				}
+			}
+			else if(!client.connected())
+			{
+				client.stop();
+
+				// Some connection error happened for some reason
+				Serial.println("Error happened!");
+				return 0;
+			}
+
+			delayMicroseconds(50);
+
+		} while (1);
+
+
+		
+	}
+
+	Serial.println("GetCheck is failed!");
+
+	return 0;
 }
 
 void Login(int)
@@ -95,6 +179,7 @@ int CheckConnection()
 
 
 		Serial.println("Client is Connected");
+
 		// Make a HTTP request:
 		client.print("GET ");
 		client.print(testAddress);
@@ -124,6 +209,7 @@ int CheckConnection()
 
 			// if the server's disconnected, stop the client:
 			if (!client.connected()) {
+
 				Serial.println();
 				Serial.println("disconnecting.");
 				client.stop();

@@ -30,12 +30,12 @@
 #include "NetModule.h"
 #include "LcdScreen.h"
 
-char dataLines[32] =	" Hello, Gabriel Last event: Out";
+char dataLines[32] =	"                               ";
 
 char screenReady[32] =	" System booting   Please wait  ";
-char netIsFail[32] =	" Net is tested    FATAL ERROR! ";
+char netIsFail[32] =	" Net is failed    FATAL ERROR! ";
 
-char systemStdb[32] =	"System is ready Use the reader ";
+char systemStdb[32] =	"System is ready  Use the reader";
 								//		 |
 
 int userID = -1;
@@ -86,17 +86,32 @@ void loop()
 	if (userID > -1)
 	{
 		// We got a user data!
-		// Now wait for the Red or Green button.
+		// Now get the CHECK data from the server
 
 		Serial.print("Found a fingerprint with ID ");
 		Serial.println(userID);
+
+		if (GetCheck(userID, dataLines))
+		{
+			// Success!
+			WriteToScreen(&dataLines[0]); 
+
+			// Waiting for the RED or GREEN button
+		}
+		else
+		{
+			// Connection error happened!
+			WriteToScreen(&netIsFail[0]);
+
+			// This count as a fatal error
+			while (1) { delay(1); }
+		}
 	}
-	else if (userID == -2)
-	{	// Error happened!
+	else if(userID < -1) // Error happened - write the regular screen
+	{
 		WriteToScreen(&systemStdb[0]);
 	}
 
 	// Rest a little.
 	delay(50);
-
 }

@@ -30,9 +30,15 @@ void WriteToScreen(char *data)
 
 	SplitData(data);
 
+	Serial.println();
+	Serial.print('\'');
 	Serial.print(firstLine);
-	Serial.print(" ");
-	Serial.println(secondLine);
+	Serial.print('\'');
+	Serial.println();
+	Serial.print('\'');
+	Serial.print(secondLine);
+	Serial.println('\'');
+	Serial.println();
 
 	lcd.setCursor(0, 0);
 	lcd.print(firstLine);

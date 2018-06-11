@@ -19,11 +19,12 @@ char converted[3] = "  ";
 char unknowError[32] =		"  System error!  Please restart";
 char imgError[32] =			"   Image error!    Try again   ";
 char imgMsmMathc[32] =		" Image not match    Try again  ";
-char notFound[32] =			" User not found    Try again   ";
+char notFound[32] =			" User not found     Try again  ";
 
 char imageTook[32] =		"   Image taken   remove finger ";
 char enrollConfirm[32] =	" Put same finger on the reader ";
 char userStored[32] =		"  Success! User  stored. ID:   ";
+
 
 void SetupReader()
 {
@@ -78,7 +79,6 @@ void EnrollFinger(uint8_t bioID)
 			break;
 		}
 	}
-
 
 	// OK success!
 	// Convert the image.
@@ -317,7 +317,6 @@ int getFingerprintID()
 	}
 
 	// OK success!
-
 	status = finger.image2Tz();
 
 	if (status != FINGERPRINT_OK) {
@@ -337,6 +336,9 @@ int getFingerprintID()
 		// found a match!
 		Serial.print("Found ID #"); Serial.print(finger.fingerID);
 		Serial.print(" with confidence of "); Serial.println(finger.confidence);
+
+		WriteToScreen(&imageTook[0]);
+
 		return finger.fingerID;
 
 	case FINGERPRINT_NOTFOUND:

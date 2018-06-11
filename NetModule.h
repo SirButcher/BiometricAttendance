@@ -13,7 +13,7 @@ void SetupNetModule();
 
 int GetNewID();
 
-void GetCheck(int, char*);
+int GetCheck(int, char[32]);
 
 void Login(int);
 void Logout(int);
