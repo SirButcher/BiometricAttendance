@@ -84,6 +84,7 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="APP_Constants.h" />
     <ClInclude Include="FingerReader.h" />
     <ClInclude Include="LcdScreen.h" />
     <ClInclude Include="NetModule.h" />

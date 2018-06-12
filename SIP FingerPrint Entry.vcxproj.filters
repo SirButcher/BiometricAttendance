@@ -30,6 +30,9 @@
     <ClInclude Include="FingerReader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="APP_Constants.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="LcdScreen.cpp">

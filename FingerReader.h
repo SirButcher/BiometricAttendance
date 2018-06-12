@@ -11,7 +11,7 @@
 
 void SetupReader();
 
-void EnrollFinger(uint8_t);
+int EnrollFinger(uint8_t);
 
 int getFingerprintID();
 

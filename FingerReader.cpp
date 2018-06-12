@@ -5,6 +5,8 @@
 #include "FingerReader.h"
 #include "LcdScreen.h"
 
+#include "App_Constants.h"
+
 #include <Adafruit_Fingerprint.h>
 #include <SoftwareSerial.h>
 
@@ -16,14 +18,6 @@ int status = -1;
 
 char converted[3] = "  ";
 
-char unknowError[32] =		"  System error!  Please restart";
-char imgError[32] =			"   Image error!    Try again   ";
-char imgMsmMathc[32] =		" Image not match    Try again  ";
-char notFound[32] =			" User not found     Try again  ";
-
-char imageTook[32] =		"   Image taken   remove finger ";
-char enrollConfirm[32] =	" Put same finger on the reader ";
-char userStored[32] =		"  Success! User  stored. ID:   ";
 
 
 void SetupReader()
@@ -41,13 +35,16 @@ void SetupReader()
 	else {
 		// Sensor is missing!
 
-		WriteToScreen(&unknowError[0]);
+		WriteToScreen(_systemError, 0);
+		WriteToScreen(_fatalError, 1);
 
 		while (1) { delay(1); }
 	}
 }
 
-void EnrollFinger(uint8_t bioID)
+// Return 0 if fails
+//		  1 if success
+int EnrollFinger(uint8_t bioID)
 {
 	status = -1;
 
@@ -64,18 +61,27 @@ void EnrollFinger(uint8_t bioID)
 		case FINGERPRINT_OK:
 			// Successfully took an image
 			break;
+
 		case FINGERPRINT_NOFINGER:
 			// Still waiting. Check the red button
 			break;
+
 		case FINGERPRINT_PACKETRECIEVEERR:
-			WriteToScreen(&unknowError[0]);
+			WriteToScreen(_systemError, 0);
+			WriteToScreen(_fatalError, 1);
 			while (1) { delay(1); }
+
 			break;
+
 		case FINGERPRINT_IMAGEFAIL:
-			WriteToScreen(&imgError[0]);
+			WriteToScreen(_imageError, 0);
+			WriteToScreen(_tryAgain, 1);
+
 			break;
 		default:
-			WriteToScreen(&unknowError[0]);
+			WriteToScreen(_systemError, 0);
+			WriteToScreen(_tryAgain, 1);
+
 			break;
 		}
 	}
@@ -88,35 +94,18 @@ void EnrollFinger(uint8_t bioID)
 	switch (status) {
 	case FINGERPRINT_OK:
 		// Image converted!
+		// We can go to the next step
 		break;
-	case FINGERPRINT_IMAGEMESS:
-		WriteToScreen(&imgError[0]);
-		delay(2000);
-		EnrollFinger(bioID);
-		return;
-	case FINGERPRINT_PACKETRECIEVEERR:
-		WriteToScreen(&imgError[0]);
-		delay(2000);
-		EnrollFinger(bioID);
-		return;
-	case FINGERPRINT_FEATUREFAIL:
-		WriteToScreen(&imgError[0]);
-		delay(2000);
-		EnrollFinger(bioID);
-		return;
-	case FINGERPRINT_INVALIDIMAGE:
-		WriteToScreen(&imgError[0]);
-		delay(2000);
-		EnrollFinger(bioID);
-		return;
 	default:
-		WriteToScreen(&imgError[0]);
+		// Error happened
+		WriteToScreen(_imageError, 0);
+		WriteToScreen(_tryAgain, 1);
 		delay(2000);
-		EnrollFinger(bioID);
-		return;
+		return -1;
 	}
 
-	WriteToScreen(&imageTook[0]);
+	WriteToScreen(_imageTook, 0);
+	WriteToScreen(_removeFinger, 1);
 
 	// Image is converted or we try again.
 	// Now we are waiting for the user to remove 
@@ -132,7 +121,10 @@ void EnrollFinger(uint8_t bioID)
 	// Finger is removed!
 	// Confirming the read print.
 
-	WriteToScreen(&enrollConfirm[0]);
+	WriteToScreen(_enroll0, 0);
+	WriteToScreen(_enroll1, 1);
+
+
 	status = -1;
 
 	while (status != FINGERPRINT_OK) {
@@ -148,14 +140,17 @@ void EnrollFinger(uint8_t bioID)
 			// Still waiting. Check the red button
 			break;
 		case FINGERPRINT_PACKETRECIEVEERR:
-			WriteToScreen(&unknowError[0]);
+			WriteToScreen(_systemError, 0);
+			WriteToScreen(_fatalError, 1);
 			while (1) { delay(1); }
 			break;
 		case FINGERPRINT_IMAGEFAIL:
-			WriteToScreen(&imgError[0]);
+			WriteToScreen(_imageError, 0);
+			WriteToScreen(_tryAgain, 1);
 			break;
 		default:
-			WriteToScreen(&unknowError[0]);
+			WriteToScreen(_imageError, 0);
+			WriteToScreen(_tryAgain, 1);
 			break;
 		}
 	}
@@ -169,31 +164,11 @@ void EnrollFinger(uint8_t bioID)
 	case FINGERPRINT_OK:
 		// OK
 		break;
-	case FINGERPRINT_IMAGEMESS:
-		WriteToScreen(&imgError[0]);
-		delay(2000);
-		EnrollFinger(bioID);
-		return;
-	case FINGERPRINT_PACKETRECIEVEERR:
-		WriteToScreen(&imgError[0]);
-		delay(2000);
-		EnrollFinger(bioID);
-		return;
-	case FINGERPRINT_FEATUREFAIL:
-		WriteToScreen(&imgError[0]);
-		delay(2000);
-		EnrollFinger(bioID);
-		return;
-	case FINGERPRINT_INVALIDIMAGE:
-		WriteToScreen(&imgError[0]);
-		delay(2000);
-		EnrollFinger(bioID);
-		return;
 	default:
-		WriteToScreen(&imgError[0]);
+		WriteToScreen(_imageError, 0);
+		WriteToScreen(_tryAgain, 1);
 		delay(2000);
-		EnrollFinger(bioID);
-		return;
+		return 0;
 	}
 
 	// Second image is converted successfully!
@@ -204,23 +179,17 @@ void EnrollFinger(uint8_t bioID)
 	if (status == FINGERPRINT_OK) {
 		// Huzzah!
 	}
-	else if (status == FINGERPRINT_PACKETRECIEVEERR) {
-		WriteToScreen(&imgError[0]);
-		delay(2000);
-		EnrollFinger(bioID);
-		return;
-	}
 	else if (status == FINGERPRINT_ENROLLMISMATCH) {
-		WriteToScreen(&imgMsmMathc[0]);
+		WriteToScreen(_imageNotMatch, 0);
+		WriteToScreen(_tryAgain, 1);
 		delay(2000);
-		EnrollFinger(bioID);
-		return;
+		return 0;
 	}
 	else {
-		WriteToScreen(&imgError[0]);
+		WriteToScreen(_systemError, 0);
+		WriteToScreen(_tryAgain, 1);
 		delay(2000);
-		EnrollFinger(bioID);
-		return;
+		return 0;
 	}
 
 	// Okay, so far so good!
@@ -236,29 +205,11 @@ void EnrollFinger(uint8_t bioID)
 	if (status == FINGERPRINT_OK) {
 		// Data stored! Hurray!
 	}
-	else if (status == FINGERPRINT_PACKETRECIEVEERR) {
-		WriteToScreen(&imgError[0]);
-		delay(2000);
-		EnrollFinger(bioID);
-		return;
-	}
-	else if (status == FINGERPRINT_BADLOCATION) {
-		WriteToScreen(&imgError[0]);
-		delay(2000);
-		EnrollFinger(bioID);
-		return;
-	}
-	else if (status == FINGERPRINT_FLASHERR) {
-		WriteToScreen(&imgError[0]);
-		delay(2000);
-		EnrollFinger(bioID);
-		return;
-	}
 	else {
-		WriteToScreen(&imgError[0]);
+		WriteToScreen(_imageError, 0);
+		WriteToScreen(_tryAgain, 1);
 		delay(2000);
-		EnrollFinger(bioID);
-		return;
+		return 0;
 	}
 	
 	status = -1;
@@ -267,27 +218,32 @@ void EnrollFinger(uint8_t bioID)
 
 	itoa(bioID, converted, 10);
 
+	_userStored1[12] = ' ';
+	_userStored1[13] = ' ';
+	_userStored1[14] = ' ';
+
 	if (bioID < 10)
 	{
-		userStored[29] = converted[0];
-		userStored[30] = ' ';
-		userStored[31] = ' ';
+		_userStored1[12] = converted[0];
 	}
 	else if (bioID < 100)
 	{
-		userStored[29] = converted[0];
-		userStored[30] = converted[1];
-		userStored[31] = ' ';
+		_userStored1[12] = converted[0];
+		_userStored1[13] = converted[1];
 	}
 	else
 	{
-		userStored[29] = converted[0];
-		userStored[30] = converted[1];
-		userStored[31] = converted[2];
+		_userStored1[12] = converted[0];
+		_userStored1[13] = converted[1];
+		_userStored1[14] = converted[2];
 	}
 
-	WriteToScreen(&userStored[0]);
+	WriteToScreen(_userStored0, 0);
+	WriteToScreen(_userStored1, 1);
+
 	delay(5000);
+
+	return 1;
 }
 
 int getFingerprintID()
@@ -302,17 +258,9 @@ int getFingerprintID()
 		break;
 	case FINGERPRINT_NOFINGER:
 		return -1;
-	case FINGERPRINT_PACKETRECIEVEERR:
-		WriteToScreen(&imgError[0]);
-		delay(2000);
-		return -2;
-	case FINGERPRINT_IMAGEFAIL:
-		WriteToScreen(&imgError[0]);
-		delay(2000);
-		return -2;
 	default:
-		WriteToScreen(&imgError[0]);
-		delay(2000);
+		WriteToScreen(_imageError, 0);
+		WriteToScreen(_tryAgain, 1);
 		return -2;
 	}
 
@@ -322,7 +270,9 @@ int getFingerprintID()
 	if (status != FINGERPRINT_OK) {
 		// Error happened during the conversion
 
-		WriteToScreen(&imgError[0]);
+		WriteToScreen(_imageError, 0);
+		WriteToScreen(_tryAgain, 1);
+
 		delay(2000);
 		return -2;
 	}
@@ -337,12 +287,16 @@ int getFingerprintID()
 		Serial.print("Found ID #"); Serial.print(finger.fingerID);
 		Serial.print(" with confidence of "); Serial.println(finger.confidence);
 
-		WriteToScreen(&imageTook[0]);
+		WriteToScreen(_imageTook, 0);
+		WriteToScreen(_removeFinger, 1);
 
 		return finger.fingerID;
 
 	case FINGERPRINT_NOTFOUND:
-		WriteToScreen(&notFound[0]);
+
+		WriteToScreen(_imageError, 0);
+		WriteToScreen(_userNotFound, 1);
+
 		delay(2000);
 		return -1;
 
@@ -350,7 +304,9 @@ int getFingerprintID()
 		// We can skip the different error types
 		// as for us all of them mean one thing:
 		// The operation is failed.
-		WriteToScreen(&imgError[0]);
+		WriteToScreen(_imageError, 0);
+		WriteToScreen(_tryAgain, 1);
+
 		delay(2000);
 		return -2;
 	}

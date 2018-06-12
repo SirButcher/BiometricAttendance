@@ -24,7 +24,8 @@ void SetupLCD()
 	Serial.println("LCD is OK!");
 }
 
-void WriteToScreen(char *data) 
+/*
+void WriteToScreen(_char *data) 
 {
 	Serial.print("Writing to the screen: ");
 
@@ -45,6 +46,13 @@ void WriteToScreen(char *data)
 
 	lcd.setCursor(0, 1);
 	lcd.print(secondLine);
+}
+*/
+
+void WriteToScreen(char data[], int line)
+{
+	lcd.setCursor(0, line);
+	lcd.print(data);
 }
 
 void SplitData(char *data)

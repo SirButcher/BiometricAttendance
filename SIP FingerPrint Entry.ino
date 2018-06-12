@@ -21,22 +21,45 @@
 // Put the SDA to the A4 ( White )
 // It uses 5V!!
 
+
 #include <SoftwareSerial.h>
 #include <Adafruit_Fingerprint.h>
 #include <SPI.h>
 #include <Ethernet.h>
 
+#include "App_Constants.h"
 #include "FingerReader.h"
 #include "NetModule.h"
 #include "LcdScreen.h"
 
 char dataLines[32] =	"                               ";
 
-char screenReady[32] =	" System booting   Please wait  ";
-char netIsFail[32] =	" Net is failed    FATAL ERROR! ";
+char _systemBooting[17] = " System booting ";
+char _netFailed[17] = "  Net is failed ";
+char _systemReady[17] = "System is ready ";
+char _pleaseWait[17] = "   Please wait  ";
+char _useTheReader[17] = " Use the reader ";
 
-char systemStdb[32] =	"System is ready  Use the reader";
-								//		 |
+char _tryAgain[17] = "    Try again   ";
+
+char _imageTook[17] = "   Image taken  ";
+char _removeFinger[17] = "  remove finger ";
+
+
+char _enroll0[17] = "Put same finger ";
+char _enroll1[17] = " on the reader  ";
+
+char _userStored0[17] = "  Success! User ";
+char _userStored1[17] = " stored. ID:xxx ";
+
+
+// Errors
+char _fatalError[17] = "   FATAL ERROR  ";
+char _systemError[17] = " System error!  ";
+char _imageError[17] = "  Image error!  ";
+char _imageNotMatch[17] = "Image not match ";
+char _userNotFound[17] = " User not found ";
+
 
 int userID = -1;
 
@@ -54,7 +77,8 @@ void setup()
 	// First, setup the LCD screen.
 	// This will initialize it.
 	SetupLCD();
-	WriteToScreen(&screenReady[0]);
+	WriteToScreen(_systemBooting, 0);
+	WriteToScreen(_pleaseWait, 1);
 
 	SetupReader();
 
@@ -65,11 +89,14 @@ void setup()
 	if (!CheckConnection())
 	{
 		// Connection failed.
-		WriteToScreen(&netIsFail[0]);
+		WriteToScreen(_netFailed, 0);
+		WriteToScreen(_fatalError, 1);
+
 		while (1) { delay(1); }
 	}
 
-	WriteToScreen(&systemStdb[0]);
+	WriteToScreen(_systemReady, 0);
+	WriteToScreen(_useTheReader, 1);
 }
 
 void loop()
@@ -80,6 +107,8 @@ void loop()
 
 	// This method will return with either -1 (no finger on the screen)
 	// or with the user's ID.
+
+	/*
 
 	userID = getFingerprintID();
 
@@ -94,14 +123,14 @@ void loop()
 		if (GetCheck(userID, dataLines))
 		{
 			// Success!
-			WriteToScreen(&dataLines[0]); 
+			WriteToScreen(_&dataLines[0]); 
 
 			// Waiting for the RED or GREEN button
 		}
 		else
 		{
 			// Connection error happened!
-			WriteToScreen(&netIsFail[0]);
+			WriteToScreen(_&netIsFail[0]);
 
 			// This count as a fatal error
 			while (1) { delay(1); }
@@ -109,8 +138,10 @@ void loop()
 	}
 	else if(userID < -1) // Error happened - write the regular screen
 	{
-		WriteToScreen(&systemStdb[0]);
+		WriteToScreen(_&systemStdb[0]);
 	}
+
+	*/
 
 	// Rest a little.
 	delay(50);
