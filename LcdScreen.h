@@ -13,7 +13,7 @@ void SetupLCD();
 
 void WriteToScreen(char[], int);
 
-void SplitData(char*);
+void WriteToScreen(char[], char[]);
 
 #endif
 

@@ -11,9 +11,6 @@ LiquidCrystal_I2C lcd(0x20, 16, 2);
 // Put the SDA to the A4
 // It uses 5V!!
 
-char firstLine[16];
-char secondLine[16];
-
 void SetupLCD()
 {
 	Serial.println("Initializing LCD");
@@ -24,47 +21,30 @@ void SetupLCD()
 	Serial.println("LCD is OK!");
 }
 
-/*
-void WriteToScreen(_char *data) 
-{
-	Serial.print("Writing to the screen: ");
-
-	SplitData(data);
-
-	Serial.println();
-	Serial.print('\'');
-	Serial.print(firstLine);
-	Serial.print('\'');
-	Serial.println();
-	Serial.print('\'');
-	Serial.print(secondLine);
-	Serial.println('\'');
-	Serial.println();
-
-	lcd.setCursor(0, 0);
-	lcd.print(firstLine);
-
-	lcd.setCursor(0, 1);
-	lcd.print(secondLine);
-}
-*/
-
 void WriteToScreen(char data[], int line)
 {
 	lcd.setCursor(0, line);
 	lcd.print(data);
 }
 
-void SplitData(char *data)
+void WriteToScreen(char firstLine[], char secondLine[])
 {
-	for (int i = 0; i < 16; i++)
-	{
-		firstLine[i] = *(data + i);
-	}
+	Serial.println("Writing to the screen: ");
+	Serial.print('\'');
+	Serial.print(firstLine);
+	Serial.print('\'');
 
-	for (int i = 0; i < 16; i++)
-	{
-		secondLine[i] = *(data + 16 + i);
-	}
-	
+	Serial.println('\'');
+	Serial.print(secondLine);
+	Serial.print('\'');
+	Serial.println();
+
+
+
+	lcd.setCursor(0, 0);
+	lcd.print(firstLine);
+
+
+	lcd.setCursor(0, 1);
+	lcd.print(secondLine);
 }

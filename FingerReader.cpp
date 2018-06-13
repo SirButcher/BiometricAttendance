@@ -35,8 +35,7 @@ void SetupReader()
 	else {
 		// Sensor is missing!
 
-		WriteToScreen(_systemError, 0);
-		WriteToScreen(_fatalError, 1);
+		WriteToScreen(_systemError, _fatalError);
 
 		while (1) { delay(1); }
 	}
@@ -67,20 +66,17 @@ int EnrollFinger(uint8_t bioID)
 			break;
 
 		case FINGERPRINT_PACKETRECIEVEERR:
-			WriteToScreen(_systemError, 0);
-			WriteToScreen(_fatalError, 1);
+			WriteToScreen(_systemError, _fatalError);
 			while (1) { delay(1); }
 
 			break;
 
 		case FINGERPRINT_IMAGEFAIL:
-			WriteToScreen(_imageError, 0);
-			WriteToScreen(_tryAgain, 1);
+			WriteToScreen(_imageError, _tryAgain);
 
 			break;
 		default:
-			WriteToScreen(_systemError, 0);
-			WriteToScreen(_tryAgain, 1);
+			WriteToScreen(_systemError, _tryAgain);
 
 			break;
 		}
@@ -98,14 +94,12 @@ int EnrollFinger(uint8_t bioID)
 		break;
 	default:
 		// Error happened
-		WriteToScreen(_imageError, 0);
-		WriteToScreen(_tryAgain, 1);
+		WriteToScreen(_imageError, _tryAgain);
 		delay(2000);
 		return -1;
 	}
 
-	WriteToScreen(_imageTook, 0);
-	WriteToScreen(_removeFinger, 1);
+	WriteToScreen(_imageTook, _removeFinger);
 
 	// Image is converted or we try again.
 	// Now we are waiting for the user to remove 
@@ -121,8 +115,7 @@ int EnrollFinger(uint8_t bioID)
 	// Finger is removed!
 	// Confirming the read print.
 
-	WriteToScreen(_enroll0, 0);
-	WriteToScreen(_enroll1, 1);
+	WriteToScreen(_enroll0, _enroll1);
 
 
 	status = -1;
@@ -140,17 +133,14 @@ int EnrollFinger(uint8_t bioID)
 			// Still waiting. Check the red button
 			break;
 		case FINGERPRINT_PACKETRECIEVEERR:
-			WriteToScreen(_systemError, 0);
-			WriteToScreen(_fatalError, 1);
+			WriteToScreen(_systemError, _fatalError);
 			while (1) { delay(1); }
 			break;
 		case FINGERPRINT_IMAGEFAIL:
-			WriteToScreen(_imageError, 0);
-			WriteToScreen(_tryAgain, 1);
+			WriteToScreen(_imageError, _tryAgain);
 			break;
 		default:
-			WriteToScreen(_imageError, 0);
-			WriteToScreen(_tryAgain, 1);
+			WriteToScreen(_imageError, _tryAgain);
 			break;
 		}
 	}
@@ -165,8 +155,7 @@ int EnrollFinger(uint8_t bioID)
 		// OK
 		break;
 	default:
-		WriteToScreen(_imageError, 0);
-		WriteToScreen(_tryAgain, 1);
+		WriteToScreen(_imageError, _tryAgain);
 		delay(2000);
 		return 0;
 	}
@@ -180,14 +169,12 @@ int EnrollFinger(uint8_t bioID)
 		// Huzzah!
 	}
 	else if (status == FINGERPRINT_ENROLLMISMATCH) {
-		WriteToScreen(_imageNotMatch, 0);
-		WriteToScreen(_tryAgain, 1);
+		WriteToScreen(_imageNotMatch, _tryAgain);
 		delay(2000);
 		return 0;
 	}
 	else {
-		WriteToScreen(_systemError, 0);
-		WriteToScreen(_tryAgain, 1);
+		WriteToScreen(_systemError, _tryAgain);
 		delay(2000);
 		return 0;
 	}
@@ -206,8 +193,7 @@ int EnrollFinger(uint8_t bioID)
 		// Data stored! Hurray!
 	}
 	else {
-		WriteToScreen(_imageError, 0);
-		WriteToScreen(_tryAgain, 1);
+		WriteToScreen(_imageError, _tryAgain);
 		delay(2000);
 		return 0;
 	}
@@ -238,8 +224,7 @@ int EnrollFinger(uint8_t bioID)
 		_userStored1[14] = converted[2];
 	}
 
-	WriteToScreen(_userStored0, 0);
-	WriteToScreen(_userStored1, 1);
+	WriteToScreen(_userStored0, _userStored1);
 
 	delay(5000);
 
@@ -259,8 +244,7 @@ int getFingerprintID()
 	case FINGERPRINT_NOFINGER:
 		return -1;
 	default:
-		WriteToScreen(_imageError, 0);
-		WriteToScreen(_tryAgain, 1);
+		WriteToScreen(_imageError, _tryAgain);
 		return -2;
 	}
 
@@ -270,8 +254,7 @@ int getFingerprintID()
 	if (status != FINGERPRINT_OK) {
 		// Error happened during the conversion
 
-		WriteToScreen(_imageError, 0);
-		WriteToScreen(_tryAgain, 1);
+		WriteToScreen(_imageError, _tryAgain);
 
 		delay(2000);
 		return -2;
@@ -287,15 +270,13 @@ int getFingerprintID()
 		Serial.print("Found ID #"); Serial.print(finger.fingerID);
 		Serial.print(" with confidence of "); Serial.println(finger.confidence);
 
-		WriteToScreen(_imageTook, 0);
-		WriteToScreen(_removeFinger, 1);
+		WriteToScreen(_imageTook, _removeFinger);
 
 		return finger.fingerID;
 
 	case FINGERPRINT_NOTFOUND:
 
-		WriteToScreen(_imageError, 0);
-		WriteToScreen(_userNotFound, 1);
+		WriteToScreen(_imageError, _userNotFound);
 
 		delay(2000);
 		return -1;
@@ -304,8 +285,7 @@ int getFingerprintID()
 		// We can skip the different error types
 		// as for us all of them mean one thing:
 		// The operation is failed.
-		WriteToScreen(_imageError, 0);
-		WriteToScreen(_tryAgain, 1);
+		WriteToScreen(_imageError, _tryAgain);
 
 		delay(2000);
 		return -2;

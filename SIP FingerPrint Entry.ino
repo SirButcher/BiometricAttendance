@@ -77,8 +77,7 @@ void setup()
 	// First, setup the LCD screen.
 	// This will initialize it.
 	SetupLCD();
-	WriteToScreen(_systemBooting, 0);
-	WriteToScreen(_pleaseWait, 1);
+	WriteToScreen(_systemBooting, _pleaseWait);
 
 	SetupReader();
 
@@ -89,14 +88,12 @@ void setup()
 	if (!CheckConnection())
 	{
 		// Connection failed.
-		WriteToScreen(_netFailed, 0);
-		WriteToScreen(_fatalError, 1);
+		WriteToScreen(_netFailed, _fatalError);
 
 		while (1) { delay(1); }
 	}
 
-	WriteToScreen(_systemReady, 0);
-	WriteToScreen(_useTheReader, 1);
+	WriteToScreen(_systemReady, _useTheReader);
 }
 
 void loop()
