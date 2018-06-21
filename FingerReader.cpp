@@ -32,7 +32,7 @@ void SetupReader()
 	else {
 		// Sensor is missing!
 
-		WriteToScreen(_systemError, _EmptyLine);
+		WriteToScreen(_systemError, _readerError);
 
 		while (1) { delay(1); }
 	}
@@ -47,6 +47,8 @@ int EnrollFinger(uint8_t bioID)
 	// First enroll round.
 	// We have to wait until we get back a "OK" 
 	// or user break the process (pressing the red button)
+
+	WriteToScreen(_setupFirstStep, _setupSecondStep);
 
 	while (status != FINGERPRINT_OK) {
 
@@ -63,9 +65,9 @@ int EnrollFinger(uint8_t bioID)
 			break;
 
 		case FINGERPRINT_PACKETRECIEVEERR:
-			WriteToScreen(_systemError, 0);
-			while (1) { delay(1); }
-
+			WriteToScreen(_systemError, _tryAgain);
+			delay(2000);
+			return 0;
 			break;
 
 		case FINGERPRINT_IMAGEFAIL:
@@ -74,6 +76,7 @@ int EnrollFinger(uint8_t bioID)
 			break;
 		default:
 			WriteToScreen(_systemError, _tryAgain);
+			return 0;
 
 			break;
 		}
@@ -93,7 +96,7 @@ int EnrollFinger(uint8_t bioID)
 		// Error happened
 		WriteToScreen(_imageError, _tryAgain);
 		delay(2000);
-		return -1;
+		return 0;
 	}
 
 	WriteToScreen(_imageTook, _removeFinger);
@@ -130,8 +133,9 @@ int EnrollFinger(uint8_t bioID)
 			// Still waiting. Check the red button
 			break;
 		case FINGERPRINT_PACKETRECIEVEERR:
-			WriteToScreen(_systemError, 0);
-			while (1) { delay(1); }
+			WriteToScreen(_systemError, _tryAgain);
+			delay(2000);
+			return 0;
 			break;
 		case FINGERPRINT_IMAGEFAIL:
 			WriteToScreen(_imageError, _tryAgain);
@@ -223,7 +227,7 @@ int EnrollFinger(uint8_t bioID)
 
 	WriteToScreen(_userStored0, _userStored1);
 
-	delay(5000);
+	delay(10000);
 
 	return 1;
 }
@@ -286,7 +290,7 @@ int getFingerprintID()
 		WriteToScreen(_imageError, _userNotFound);
 
 		delay(2000);
-		return -1;
+		return -2;
 
 	default:
 		// We can skip the different error types

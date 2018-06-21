@@ -11,8 +11,6 @@
 
 void SetupLCD();
 
-void WriteToScreenLine(int, int);
-
 void WriteToScreen(int, int);
 
 void WriteToScreen(char[], char[]);

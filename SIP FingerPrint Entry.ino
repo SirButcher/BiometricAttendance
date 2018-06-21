@@ -69,10 +69,11 @@ int _LoggedIn = 6;
 int _LoggedOut = 7;
 int _thankYou = 8;
 
+
 int _tryAgain = 9;
 
 int _imageTook = 10;
-int _removeFinge = 11;
+int _removeFinger = 11;
 
 
 int _enroll0 = 12;
@@ -86,6 +87,13 @@ int _userNotFound = 17;
 int _FatalError = 18;
 
 int _EmptyLine = 19;
+
+int _gettingID = 20;
+int _Success = 21;
+int _ManualConfReq = 22;
+
+int _setupFirstStep = 23;
+int _setupSecondStep = 24;
 
 // ---------------------------------------------------
 
@@ -309,6 +317,49 @@ void WaitingForButtonAfterUserRead(int pressedButton) {
 void RegisterANewUser()
 {
 	Serial.println("Entering setup mode!");
+
+	WriteToScreen(_gettingID, _pleaseWait);
+
+	userID = GetNewID();
+
+	if (userID < 0)
+	{
+		WriteToScreen(_netFailed, _tryAgain);
+		delay(2000);
+
+		stage = _StandBy;
+
+		return;
+	}
+
+	Serial.print("User id: ");
+	Serial.println(userID);
+
+	if (EnrollFinger(userID))
+	{
+		// Success!
+		// Send the confirmation to the server!
+
+		if (ConfirmBioID(userID))
+		{
+			// User is confirmed.
+			WriteToScreen(_Success, _thankYou);
+			delay(2000);
+		}
+		else
+		{
+			// Confirmation failed!!
+			WriteToScreen(_netFailed, _ManualConfReq);
+			delay(2000);
+		}
+	}
+	else
+	{
+		// Failure!
+		// User already got the message to try again.
+	}
+
+	stage = _StandBy;
 }
 
 int CheckButtonPress()

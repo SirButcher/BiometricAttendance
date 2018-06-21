@@ -11,14 +11,18 @@ char buffer[17] = "                ";
 
 const char start_0[] PROGMEM = " System booting ";
 const char start_1[] PROGMEM = "  Net is failed ";
-const char start_2[] PROGMEM = "  Hi, I am Jim. ";
+const char start_2[] PROGMEM = " Hi, I'm Freddy ";
 const char start_3[] PROGMEM = "   Please wait  ";
-const char start_4[] PROGMEM = " Reader is Ready";
+const char start_4[] PROGMEM = "   Finger Me ;) ";
 
 const char gui_0[] PROGMEM = " Entering Setup ";
 const char gui_1[] PROGMEM = "    Logged in   ";
 const char gui_2[] PROGMEM = "   Logged out   ";
 const char gui_3[] PROGMEM = "   Thank you!   ";
+const char gui_4[] PROGMEM = " Getting userID ";
+const char gui_5[] PROGMEM = "    Success!    ";
+const char gui_6[] PROGMEM = "  Put finger on ";
+const char gui_7[] PROGMEM = "   the reader   ";
 
 const char notif_0[] PROGMEM = "    Try again   ";
 const char notif_1[] PROGMEM = "   Image taken  ";
@@ -31,6 +35,8 @@ const char error_1[] PROGMEM = "  Image error!  ";
 const char error_2[] PROGMEM = "Image not match ";
 const char error_3[] PROGMEM = " User not found ";
 const char error_4[] PROGMEM = "   FATAL ERROR  ";
+const char error_5[] PROGMEM = " Man. Conf. Req ";
+const char error_6[] PROGMEM = "  Reader error! ";
 
 const char Empty[] PROGMEM =  "                ";
 
@@ -45,7 +51,9 @@ const char* const string_table[] PROGMEM =
 
 	error_0, error_1, error_2, error_3, error_4,
 
-	Empty
+	Empty,
+
+	gui_4, gui_5, error_5, gui_6, gui_7, error_6
 };
 
 // Put the SCL to the A5

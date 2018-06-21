@@ -11,6 +11,8 @@
 
 void SetupNetModule();
 
+int ConfirmBioID(int);
+
 int GetNewID();
 
 int GetCheck(int, char[17], char[17]);

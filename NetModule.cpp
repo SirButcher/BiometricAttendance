@@ -48,6 +48,8 @@ char dataStartMark = '@';
 
 EthernetClient client;
 
+char lenghtBuffer[2] = " ";
+
 void SetupNetModule()
 {
 	Serial.println("Initializing net module, please wait..");
@@ -70,9 +72,178 @@ void SetupNetModule()
 	Serial.println("Net module is ready!");
 }
 
+int ConfirmBioID(int bioID)
+{
+	if (client.connect(serverIP, port))
+	{
+		Serial.println("Getting a new BioID");
+
+		// Make a HTTP request:
+		client.print(getString);
+		client.print(address);
+		client.print(confirmLink);
+		client.print(bioIDParam);
+		client.print(bioID);
+
+		client.println(connectionVersion);
+		client.print(hostString);
+		client.println(server);
+
+		client.println(closeString);
+		client.println();
+
+
+		// Read the data while it is available
+		int hasData = 1;
+
+		do
+		{
+			// if there are incoming bytes available
+			// from the server, read them and print them:
+			if (client.available()) {
+
+				Serial.println("Data arrived!");
+				client.stop();
+
+				// Exit from the loop
+				hasData = 0;
+			}
+
+			// if the server's disconnected, stop the client:
+			if (!client.connected()) {
+
+				Serial.println();
+				Serial.println("disconnecting.");
+				client.stop();
+
+				hasData = 0;
+			}
+
+			delayMicroseconds(50);
+
+		} while (hasData);
+
+		Serial.println("Connection is working!");
+
+		return 1;
+	}
+	else
+	{
+		// If the connection failed:
+		Serial.println("connection failed");
+
+		return 0;
+	}
+
+	// In case I mess up something in the future!
+	return 0;
+
+}
+
 int GetNewID()
 {
-	return 0;
+	int bioID = -1;
+	int dataLenght = -1;
+
+	if (client.connect(serverIP, port))
+	{
+		Serial.println("Getting a new BioID");
+
+		// Make a HTTP request:
+		client.print(getString);
+		client.print(address);
+		client.print(newUserLink);
+
+		client.println(connectionVersion);
+		client.print(hostString);
+		client.println(server);
+
+		client.println(closeString);
+		client.println();
+
+		char buffer[4] = "   ";
+
+		// Read the data while it is available
+		int counter = 0;
+		do
+		{
+			// if there are incoming bytes available
+			// from the server, read them and print them:
+			if (client.available()) {
+
+				char c = client.read();
+
+				if (counter == 1)
+				{
+					// Getting the lenght of the data
+
+					//char lenghtBuffer[1];
+					lenghtBuffer[0] = c;
+
+					// The c is now a number.
+					dataLenght = atoi(lenghtBuffer);
+
+					Serial.print("We expecting: ");
+					Serial.println(dataLenght);
+
+					counter = 2;
+				}
+				else if (counter > 2)
+				{
+					// Data is arriving!
+					Serial.println("Data arriving!");
+					buffer[counter - 3] = c;
+
+					counter++;
+				}
+
+				if (counter - 3 == dataLenght)
+				{
+					Serial.println("We got all the needed data");
+
+					// We got all the needed data.
+					client.stop();
+
+					// Convert to the BioID and return with it.
+					return atoi(buffer);
+				}
+
+				if (c == dataStartMark)
+				{
+					// Data is beginning!
+
+					// The first character AFTER THIS
+					// well tell us how much character we expecting.
+
+					// Mark the beginning the NEXT character 
+					// will be useful data!
+					if (counter == 0)
+					{
+						counter++;
+					}
+					if (counter == 2)
+						counter++;
+				}
+
+
+
+			}
+			else if (!client.connected())
+			{
+				client.stop();
+
+				// Some connection error happened for some reason
+				Serial.println("Error happened!");
+				return bioID;
+			}
+
+			delayMicroseconds(50);
+
+		} while (1);
+
+	}
+
+	return -1;
 }
 
 int GetCheck(int bioID, char line0[17], char line1[17])
