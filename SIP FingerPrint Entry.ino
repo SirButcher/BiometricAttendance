@@ -19,7 +19,18 @@
 // LCD screen cabling:
 // Put the SCL to the A5 ( Orange )
 // Put the SDA to the A4 ( White )
-// It uses 5V!!
+// It uses 5V
+
+// Fingerprint reader cabling:
+// Green cable - Pin 4
+// White cable - Pin 3
+// It uses 5V
+
+// Button cabling:
+// Green button - Pin 8
+// Red button	- Pin 7
+
+// https://www.arduino.cc/reference/en/language/variables/utilities/progmem/
 
 
 #include <SoftwareSerial.h>
@@ -32,50 +43,95 @@
 #include "NetModule.h"
 #include "LcdScreen.h"
 
-char dataLines[32] =	"                               ";
-
-char _systemBooting[17] = " System booting ";
-char _netFailed[17] = "  Net is failed ";
-char _systemReady[17] = "System is ready ";
-char _pleaseWait[17] = "   Please wait  ";
-char _useTheReader[17] = " Use the reader ";
-
-char _tryAgain[17] = "    Try again   ";
-
-char _imageTook[17] = "   Image taken  ";
-char _removeFinger[17] = "  remove finger ";
+int buttonState = 0;
+int greenButtonPort = 8;
+int redButtonPort = 7;
 
 
-char _enroll0[17] = "Put same finger ";
-char _enroll1[17] = " on the reader  ";
+char data_Line0[17] = "                ";
+char data_Line1[17] = "                ";
+
+// ---------- Initializing GLOBAL variables ----------
 
 char _userStored0[17] = "  Success! User ";
 char _userStored1[17] = " stored. ID:xxx ";
 
+// Data stored in the PROGMEM Slot - in the LcdScreen.cpp
+
+int _systemBooting = 0;
+int _netFailed = 1;
+int _welcome = 2;
+int _pleaseWait = 3;
+int _useTheReader = 4;
+int _enteringSetup = 5;
+
+int _LoggedIn = 6;
+int _LoggedOut = 7;
+int _thankYou = 8;
+
+int _tryAgain = 9;
+
+int _imageTook = 10;
+int _removeFinge = 11;
+
+
+int _enroll0 = 12;
+int _enroll1 = 13;
 
 // Errors
-char _fatalError[17] = "   FATAL ERROR  ";
-char _systemError[17] = " System error!  ";
-char _imageError[17] = "  Image error!  ";
-char _imageNotMatch[17] = "Image not match ";
-char _userNotFound[17] = " User not found ";
+int _systemError = 14;
+int _imageError = 15;
+int _imageNotMatch = 16;
+int _userNotFound = 17;
+int _FatalError = 18;
 
+int _EmptyLine = 19;
+
+// ---------------------------------------------------
+
+enum AppStage
+{
+	_StandBy,
+
+	// Default stage, waiting for the user
+	_WaitingForReader,
+
+	// After a successful print reading
+	_WaitingForButtonAfterUserRead,
+
+	_RegisteringUser
+};
+
+enum ButtonPress
+{
+	_None,
+
+	_RedButton,
+	_GreenButton,
+
+
+	_BothButton,
+
+};
 
 int userID = -1;
+AppStage stage = _StandBy;
 
 
 void setup()
 {
-	// First of all, open the serial interface
+	// First of all, open the Serial interface
 	// for debugging
 	Serial.begin(9600);
 
 	Serial.println("App is starting!");
 
-	
+	pinMode(redButtonPort, INPUT);
+	pinMode(greenButtonPort, INPUT);
 
-	// First, setup the LCD screen.
-	// This will initialize it.
+
+	// Setup the LCD screen.
+	// After the setup, we can write to the screen!
 	SetupLCD();
 	WriteToScreen(_systemBooting, _pleaseWait);
 
@@ -85,61 +141,203 @@ void setup()
 
 	delay(15000);
 
+
 	if (!CheckConnection())
 	{
 		// Connection failed.
-		WriteToScreen(_netFailed, _fatalError);
+		WriteToScreen(_netFailed, _systemError);
 
 		while (1) { delay(1); }
 	}
-
-	WriteToScreen(_systemReady, _useTheReader);
 }
 
 void loop()
 {
-	// Okay, in this main loop we will have two task:
-	// 1. Check if we have a finger on the reader
-	// 2. Check if the user pressed both the buttons (entering to the Enroll)
+	int pressedButton = CheckButtonPress();
 
-	// This method will return with either -1 (no finger on the screen)
-	// or with the user's ID.
+	switch (stage)
+	{
 
-	/*
+	case _StandBy:
+		// This is the default stage - this will lead to the "WaitingForReader" stage
+		stage = _WaitingForReader;
+		WriteToScreen(_welcome, _useTheReader);
 
+		break;
+
+	case _WaitingForReader:
+
+		WaitingForReader();
+		break;
+
+	case _WaitingForButtonAfterUserRead:
+
+		WaitingForButtonAfterUserRead(pressedButton);
+
+		break;
+
+	case _RegisteringUser:
+
+		RegisterANewUser();
+		break;
+
+
+	default:
+		break;
+
+	}
+
+	// Check if we need to go the Setup mode
+	// Setup mode will let the admin to create
+	// new user when the device is idle.
+
+	if (stage == _WaitingForReader && pressedButton == _BothButton)
+	{
+		// Entering to the setupMode!
+		stage = _RegisteringUser;
+	}
+
+	// Rest a little.
+	delay(50);
+}
+
+void WaitingForReader()
+{
 	userID = getFingerprintID();
 
 	if (userID > -1)
 	{
 		// We got a user data!
-		// Now get the CHECK data from the server
+
+		// Gather the data from the server
+		// We already displayed the "Success" screen
+		// so the user know the process is working
 
 		Serial.print("Found a fingerprint with ID ");
 		Serial.println(userID);
 
-		if (GetCheck(userID, dataLines))
+		// Download the data to display:
+		if (GetCheck(userID, data_Line0, data_Line1))
 		{
 			// Success!
-			WriteToScreen(_&dataLines[0]); 
+			WriteToScreen(data_Line0, data_Line1);
 
 			// Waiting for the RED or GREEN button
+			stage = _WaitingForButtonAfterUserRead;
 		}
 		else
 		{
 			// Connection error happened!
-			WriteToScreen(_&netIsFail[0]);
+			WriteToScreen(_netFailed, _systemError);
 
 			// This count as a fatal error
 			while (1) { delay(1); }
 		}
+
+		stage = _WaitingForButtonAfterUserRead;
 	}
-	else if(userID < -1) // Error happened - write the regular screen
+	else if (userID < -1)
 	{
-		WriteToScreen(_&systemStdb[0]);
+		// If error happened then the screen will display the message
+		// and wait 2 seconds to return to this block.
+
+		// We have to write out the regular message, as the system won't do it
+
+		stage = _StandBy;
 	}
 
-	*/
 
-	// Rest a little.
-	delay(50);
+	// If no data found it will return -1
+	// and the process can continue regularly.
+
+}
+
+void WaitingForButtonAfterUserRead(int pressedButton) {
+
+	// This method will run if the fingerprint reading
+	// was successful. We need to wait if the user want to
+	// log in, or log out from the system.
+
+	int logResult = -1;
+
+	switch (pressedButton)
+	{
+	case _RedButton:
+		// User wish to log out.
+		logResult = SendLogRequest(userID, 0);
+		break;
+	case _GreenButton:
+		// User wish to log in.
+		logResult = SendLogRequest(userID, 1);
+		break;
+
+	default:
+		// No button was pressed
+		// Wait till the user made up their mind.
+		break;
+	}
+
+	if (logResult == 0)
+	{
+		// Error happened while trying to send the
+		// request to the server.
+
+		WriteToScreen(_netFailed, _tryAgain);
+		delay(2000);
+
+		stage = _StandBy;
+	}
+	else if (logResult == 1)
+	{
+		// Request was sent successfully!
+
+		if (pressedButton == _RedButton)
+		{
+			WriteToScreen(_LoggedOut, _thankYou);
+		}
+		else
+		{
+			WriteToScreen(_LoggedIn, _thankYou);
+		}
+
+		delay(2000);
+
+		stage = _StandBy;
+	}
+}
+
+void RegisterANewUser()
+{
+	Serial.println("Entering setup mode!");
+}
+
+int CheckButtonPress()
+{
+	buttonState = digitalRead(greenButtonPort);
+
+	int returnVariable = _None;
+
+	if (buttonState == HIGH) {
+		// Green button is pressed!
+		returnVariable = _GreenButton;
+	}
+
+	buttonState = digitalRead(redButtonPort);
+
+	if (buttonState == HIGH) {
+		// Red button is pressed!
+		// Lets check if the green is pressed as well:
+
+		if (returnVariable == _GreenButton)
+		{
+			returnVariable = _BothButton;
+		}
+		else
+		{
+			returnVariable = _RedButton;
+		}
+
+	}
+
+	return returnVariable;
 }

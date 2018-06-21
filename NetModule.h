@@ -13,10 +13,9 @@ void SetupNetModule();
 
 int GetNewID();
 
-int GetCheck(int, char[32]);
+int GetCheck(int, char[17], char[17]);
 
-void Login(int);
-void Logout(int);
+int SendLogRequest(int, int);
 
 int CheckConnection();
 

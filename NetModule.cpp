@@ -30,6 +30,12 @@ char address[48] = "/Entry/BioEntry.ashx?PSW=z3He8mMKwSw7yGch&TYPE=";
 char testAddress[18] = "/Entry/Check.ashx";
 char bioIDParam[8] = "&BIOID=";
 
+char getString[] = "GET ";
+
+char hostString[7] = "Host: ";
+
+char closeString[18] = "Connection: close";
+
 char connectionVersion[10] = " HTTP/1.1";
 
 char newUserLink[4] = "NEW";
@@ -69,7 +75,7 @@ int GetNewID()
 	return 0;
 }
 
-int GetCheck(int bioID, char returnData[32])
+int GetCheck(int bioID, char line0[17], char line1[17])
 {
 	if (client.connect(serverIP, port))
 	{
@@ -80,17 +86,17 @@ int GetCheck(int bioID, char returnData[32])
 		Serial.println("Getting CHECK data");
 
 		// Make a HTTP request:
-		client.print("GET ");
+		client.print(getString);
 		client.print(address);
 		client.print(checkLink);
 		client.print(bioIDParam);
 		client.print(bioID);
 
 		client.println(connectionVersion);
-		client.print("Host: ");
+		client.print(hostString);
 		client.println(server);
 
-		client.println("Connection: close");
+		client.println(closeString);
 		client.println();
 
 
@@ -102,12 +108,22 @@ int GetCheck(int bioID, char returnData[32])
 			// if there are incoming bytes available
 			// from the server, read them and print them:
 			if (client.available()) {
+
 				char c = client.read();
 
-				if (counter >= 0)
+				if (counter >= 0 && counter < 16)
 				{
+					// This is the first line
 					Serial.print(c);
-					returnData[counter] = c;
+					line0[counter] = c;
+
+					counter++;
+				}
+				else if (counter >= 16)
+				{
+					// This will be the second line
+					Serial.print(c);
+					line1[counter - 16] = c;
 
 					counter++;
 				}
@@ -146,8 +162,6 @@ int GetCheck(int bioID, char returnData[32])
 
 		} while (1);
 
-
-		
 	}
 
 	Serial.println("GetCheck is failed!");
@@ -155,11 +169,83 @@ int GetCheck(int bioID, char returnData[32])
 	return 0;
 }
 
-void Login(int)
+int SendLogRequest(int bioID, int isLogin)
 {
+	if (client.connect(serverIP, port))
+	{
+		Serial.println("Sending the LOGIN data");
+
+		// Make a HTTP request:
+		client.print("GET ");
+		client.print(address);
+
+		if (isLogin)
+		{
+			client.print(loginLink);
+		}
+		else
+		{
+			client.print(logoutLink);
+		}
+
+		client.print(bioIDParam);
+		client.print(bioID);
+
+		client.println(connectionVersion);
+		client.print(hostString);
+		client.println(server);
+
+		client.println(closeString);
+		client.println();
+
+
+		// Read the data while it is available
+		int hasData = 1;
+
+		do
+		{
+			// if there are incoming bytes available
+			// from the server, read them and print them:
+			if (client.available()) {
+
+				Serial.println("Data arrived - GET is successful.");
+				client.stop();
+
+				// Exit from the loop
+				hasData = 0;
+			}
+
+			// if the server's disconnected, stop the client:
+			if (!client.connected()) {
+
+				Serial.println();
+				Serial.println("disconnecting.");
+				client.stop();
+
+				hasData = 0;
+			}
+
+			delayMicroseconds(50);
+
+		} while (hasData);
+
+		Serial.println("Request was successful!");
+
+		return 1;
+	}
+	else
+	{
+		// If the connection failed:
+		Serial.println("connection failed");
+
+		return 0;
+	}
+
+	// In case I mess up something in the future!
+	return 0;
 }
 
-void Logout(int)
+void Logout(int bioID)
 {
 }
 

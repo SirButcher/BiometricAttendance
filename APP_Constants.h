@@ -3,31 +3,40 @@
 #ifndef _APP_CONSTANTS_h
 #define _APP_CONSTANTS_h
 
-extern char _systemBooting[17];
-extern char _netFailed[17];
-extern char _systemReady[17];
-extern char _pleaseWait[17];
-extern char _useTheReader[17];
-
-extern char _tryAgain[17];
-
-extern char _imageTook[17];
-extern char _removeFinger[17];
 
 
-extern char _enroll0[17];
-extern char _enroll1[17];
+extern int _systemBooting;
+extern int _netFailed;
+extern int _welcome;
+extern int _pleaseWait;
+extern int _useTheReader;
+extern int _enteringSetup;
 
-extern char _userStored0[17];
-extern char _userStored1[17];
+extern int _LoggedIn;
+extern int _LoggedOut;
+extern int _thankYou;
+
+extern int _tryAgain;
+
+extern int _imageTook;
+extern int _removeFinger;
+
+
+extern int _enroll0;
+extern int _enroll1;
+
+extern char _userStored0[];
+extern char _userStored1[];
 	
 
 	// Errors
-extern char _fatalError[17];
-extern char _systemError[17];
-extern char _imageError[17];
-extern char _imageNotMatch[17];
-extern char _userNotFound[17];
+extern int _systemError;
+extern int _imageError;
+extern int _imageNotMatch;
+extern int _userNotFound;
+extern int _FatalError;
+
+extern int _EmptyLine;
 
 #endif _APP_CONSTANTS_h
 

@@ -11,9 +11,13 @@
 
 void SetupLCD();
 
-void WriteToScreen(char[], int);
+void WriteToScreenLine(int, int);
+
+void WriteToScreen(int, int);
 
 void WriteToScreen(char[], char[]);
+
+char* ReadFromFlash(int);
 
 #endif
 

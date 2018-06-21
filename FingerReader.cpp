@@ -11,7 +11,7 @@
 #include <SoftwareSerial.h>
 
 
-SoftwareSerial mySerial(2, 3);
+SoftwareSerial mySerial(4, 3);
 Adafruit_Fingerprint finger = Adafruit_Fingerprint(&mySerial);
 
 int status = -1;
@@ -28,14 +28,11 @@ void SetupReader()
 
 	if (finger.verifyPassword()) {
 		// Sensor found.
-
-		finger.getTemplateCount();
-		Serial.print("Sensor contains "); Serial.print(finger.templateCount); Serial.println(" templates");
 	}
 	else {
 		// Sensor is missing!
 
-		WriteToScreen(_systemError, _fatalError);
+		WriteToScreen(_systemError, _EmptyLine);
 
 		while (1) { delay(1); }
 	}
@@ -66,7 +63,7 @@ int EnrollFinger(uint8_t bioID)
 			break;
 
 		case FINGERPRINT_PACKETRECIEVEERR:
-			WriteToScreen(_systemError, _fatalError);
+			WriteToScreen(_systemError, 0);
 			while (1) { delay(1); }
 
 			break;
@@ -133,7 +130,7 @@ int EnrollFinger(uint8_t bioID)
 			// Still waiting. Check the red button
 			break;
 		case FINGERPRINT_PACKETRECIEVEERR:
-			WriteToScreen(_systemError, _fatalError);
+			WriteToScreen(_systemError, 0);
 			while (1) { delay(1); }
 			break;
 		case FINGERPRINT_IMAGEFAIL:
@@ -231,6 +228,11 @@ int EnrollFinger(uint8_t bioID)
 	return 1;
 }
 
+// User found: >= 0
+// No data: -1
+// Error: -2
+// In case of the error screen will display the error
+// and will wait 2 seconds
 int getFingerprintID()
 {
 	status = -1;
@@ -238,6 +240,7 @@ int getFingerprintID()
 	status = finger.getImage();
 
 	switch (status) {
+
 	case FINGERPRINT_OK:
 		Serial.println("Image taken");
 		break;
@@ -245,7 +248,10 @@ int getFingerprintID()
 		return -1;
 	default:
 		WriteToScreen(_imageError, _tryAgain);
+		delay(2000);
+
 		return -2;
+
 	}
 
 	// OK success!
@@ -255,8 +261,8 @@ int getFingerprintID()
 		// Error happened during the conversion
 
 		WriteToScreen(_imageError, _tryAgain);
-
 		delay(2000);
+
 		return -2;
 	}
 
@@ -265,12 +271,13 @@ int getFingerprintID()
 
 	switch (status)
 	{
+
 	case FINGERPRINT_OK:
 		// found a match!
 		Serial.print("Found ID #"); Serial.print(finger.fingerID);
 		Serial.print(" with confidence of "); Serial.println(finger.confidence);
 
-		WriteToScreen(_imageTook, _removeFinger);
+		WriteToScreen(_imageTook, _pleaseWait);
 
 		return finger.fingerID;
 
@@ -289,6 +296,7 @@ int getFingerprintID()
 
 		delay(2000);
 		return -2;
+
 	}
 
 }
