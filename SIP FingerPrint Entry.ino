@@ -95,6 +95,8 @@ int _ManualConfReq = 22;
 int _setupFirstStep = 23;
 int _setupSecondStep = 24;
 
+int _readerError = 25;
+
 // ---------------------------------------------------
 
 enum AppStage

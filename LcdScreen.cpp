@@ -11,9 +11,9 @@ char buffer[17] = "                ";
 
 const char start_0[] PROGMEM = " System booting ";
 const char start_1[] PROGMEM = "  Net is failed ";
-const char start_2[] PROGMEM = " Hi, I'm Freddy ";
+const char start_2[] PROGMEM = " SIP Car Parks  ";
 const char start_3[] PROGMEM = "   Please wait  ";
-const char start_4[] PROGMEM = "   Finger Me ;) ";
+const char start_4[] PROGMEM = "Use the scanner ";
 
 const char gui_0[] PROGMEM = " Entering Setup ";
 const char gui_1[] PROGMEM = "    Logged in   ";
