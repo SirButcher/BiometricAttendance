@@ -62,18 +62,19 @@ const char* const string_table[] PROGMEM =
 
 void SetupLCD()
 {
-	Serial.println("Initializing LCD");
+	//Serial.println("Initializing LCD");
 
 	lcd.init();
 	lcd.backlight();
 
-	Serial.println("LCD is OK!");
+	//Serial.println("LCD is OK!");
 }
 
 void WriteToScreen(int firstMemSlot, int secondMemSlot)
 {
 	lcd.clear();
 
+	/*
 	Serial.println("Writing to the screen: ");
 	Serial.print('\'');
 	Serial.print(ReadFromFlash(firstMemSlot));
@@ -84,6 +85,7 @@ void WriteToScreen(int firstMemSlot, int secondMemSlot)
 	Serial.println('\'');
 
 	Serial.println();
+	*/
 
 	lcd.setCursor(0, 0);
 	lcd.print(ReadFromFlash(firstMemSlot));
@@ -97,6 +99,7 @@ void WriteToScreen(char fistLine[], char secondLine[])
 {
 	lcd.clear();
 
+	/*
 	Serial.println("Writing to the screen: ");
 	Serial.print('\'');
 	Serial.print(fistLine);
@@ -107,6 +110,7 @@ void WriteToScreen(char fistLine[], char secondLine[])
 	Serial.println('\'');
 
 	Serial.println();
+	*/
 
 	lcd.setCursor(0, 0);
 	lcd.print(fistLine);

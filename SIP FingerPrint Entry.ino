@@ -132,9 +132,9 @@ void setup()
 {
 	// First of all, open the Serial interface
 	// for debugging
-	Serial.begin(9600);
+	//Serial.begin(9600);
 
-	Serial.println("App is starting!");
+	//Serial.println("App is starting!");
 
 	pinMode(redButtonPort, INPUT);
 	pinMode(greenButtonPort, INPUT);
@@ -223,8 +223,8 @@ void WaitingForReader()
 		// We already displayed the "Success" screen
 		// so the user know the process is working
 
-		Serial.print("Found a fingerprint with ID ");
-		Serial.println(userID);
+		//Serial.print("Found a fingerprint with ID ");
+		//Serial.println(userID);
 
 		// Download the data to display:
 		if (GetCheck(userID, data_Line0, data_Line1))
@@ -318,7 +318,7 @@ void WaitingForButtonAfterUserRead(int pressedButton) {
 
 void RegisterANewUser()
 {
-	Serial.println("Entering setup mode!");
+	//Serial.println("Entering setup mode!");
 
 	WriteToScreen(_gettingID, _pleaseWait);
 
@@ -334,8 +334,8 @@ void RegisterANewUser()
 		return;
 	}
 
-	Serial.print("User id: ");
-	Serial.println(userID);
+	//Serial.print("User id: ");
+	//Serial.println(userID);
 
 	if (EnrollFinger(userID))
 	{

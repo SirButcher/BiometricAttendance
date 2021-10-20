@@ -22,7 +22,7 @@ char converted[3] = "  ";
 
 void SetupReader()
 {
-	Serial.println("Initializing fingerprint reader!");
+	//Serial.println("Initializing fingerprint reader!");
 
 	finger.begin(57600);
 
@@ -246,7 +246,7 @@ int getFingerprintID()
 	switch (status) {
 
 	case FINGERPRINT_OK:
-		Serial.println("Image taken");
+		//Serial.println("Image taken");
 		break;
 	case FINGERPRINT_NOFINGER:
 		return -1;
@@ -278,8 +278,8 @@ int getFingerprintID()
 
 	case FINGERPRINT_OK:
 		// found a match!
-		Serial.print("Found ID #"); Serial.print(finger.fingerID);
-		Serial.print(" with confidence of "); Serial.println(finger.confidence);
+		//Serial.print("Found ID #"); Serial.print(finger.fingerID);
+		//Serial.print(" with confidence of "); Serial.println(finger.confidence);
 
 		WriteToScreen(_imageTook, _pleaseWait);
 

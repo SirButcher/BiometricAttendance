@@ -6,7 +6,7 @@
 #include <SPI.h>
 #include <Ethernet.h>
 
-IPAddress serverIP(78, 109, 163, 153);
+IPAddress serverIP(192, 168, 1, 10);
 char server[] = "phone.sipcarparks.co.uk";
 int port = 80;
 
@@ -52,7 +52,7 @@ char lenghtBuffer[2] = " ";
 
 void SetupNetModule()
 {
-	Serial.println("Initializing net module, please wait..");
+	//Serial.println("Initializing net module, please wait..");
 
 	// initialize the ethernet device
 #if defined __USE_DHCP__
@@ -69,14 +69,14 @@ void SetupNetModule()
 #endif  
 #endif 
 
-	Serial.println("Net module is ready!");
+	//Serial.println("Net module is ready!");
 }
 
 int ConfirmBioID(int bioID)
 {
 	if (client.connect(serverIP, port))
 	{
-		Serial.println("Getting a new BioID");
+		//Serial.println("Getting a new BioID");
 
 		// Make a HTTP request:
 		client.print(getString);
@@ -102,7 +102,7 @@ int ConfirmBioID(int bioID)
 			// from the server, read them and print them:
 			if (client.available()) {
 
-				Serial.println("Data arrived!");
+				//Serial.println("Data arrived!");
 				client.stop();
 
 				// Exit from the loop
@@ -112,8 +112,8 @@ int ConfirmBioID(int bioID)
 			// if the server's disconnected, stop the client:
 			if (!client.connected()) {
 
-				Serial.println();
-				Serial.println("disconnecting.");
+				//Serial.println();
+				//Serial.println("disconnecting.");
 				client.stop();
 
 				hasData = 0;
@@ -123,14 +123,14 @@ int ConfirmBioID(int bioID)
 
 		} while (hasData);
 
-		Serial.println("Connection is working!");
+		//Serial.println("Connection is working!");
 
 		return 1;
 	}
 	else
 	{
 		// If the connection failed:
-		Serial.println("connection failed");
+		//Serial.println("connection failed");
 
 		return 0;
 	}
@@ -147,7 +147,7 @@ int GetNewID()
 
 	if (client.connect(serverIP, port))
 	{
-		Serial.println("Getting a new BioID");
+		//Serial.println("Getting a new BioID");
 
 		// Make a HTTP request:
 		client.print(getString);
@@ -183,15 +183,15 @@ int GetNewID()
 					// The c is now a number.
 					dataLenght = atoi(lenghtBuffer);
 
-					Serial.print("We expecting: ");
-					Serial.println(dataLenght);
+					//Serial.print("We expecting: ");
+					//Serial.println(dataLenght);
 
 					counter = 2;
 				}
 				else if (counter > 2)
 				{
 					// Data is arriving!
-					Serial.println("Data arriving!");
+					//Serial.println("Data arriving!");
 					buffer[counter - 3] = c;
 
 					counter++;
@@ -199,7 +199,7 @@ int GetNewID()
 
 				if (counter - 3 == dataLenght)
 				{
-					Serial.println("We got all the needed data");
+					//Serial.println("We got all the needed data");
 
 					// We got all the needed data.
 					client.stop();
@@ -233,7 +233,7 @@ int GetNewID()
 				client.stop();
 
 				// Some connection error happened for some reason
-				Serial.println("Error happened!");
+				//Serial.println("Error happened!");
 				return bioID;
 			}
 
@@ -254,7 +254,7 @@ int GetCheck(int bioID, char line0[17], char line1[17])
 		// and gather a response string
 		// for the given client biOID
 
-		Serial.println("Getting CHECK data");
+		//Serial.println("Getting CHECK data");
 
 		// Make a HTTP request:
 		client.print(getString);
@@ -316,7 +316,7 @@ int GetCheck(int bioID, char line0[17], char line1[17])
 				{
 					client.stop();
 
-					Serial.println("CHECK Data fully read!");
+					//Serial.println("CHECK Data fully read!");
 					return 1;
 				}
 			}
@@ -325,7 +325,7 @@ int GetCheck(int bioID, char line0[17], char line1[17])
 				client.stop();
 
 				// Some connection error happened for some reason
-				Serial.println("Error happened!");
+				//Serial.println("Error happened!");
 				return 0;
 			}
 
@@ -335,7 +335,7 @@ int GetCheck(int bioID, char line0[17], char line1[17])
 
 	}
 
-	Serial.println("GetCheck is failed!");
+	//Serial.println("GetCheck is failed!");
 
 	return 0;
 }
@@ -344,7 +344,7 @@ int SendLogRequest(int bioID, int isLogin)
 {
 	if (client.connect(serverIP, port))
 	{
-		Serial.println("Sending the LOGIN data");
+		//Serial.println("Sending the LOGIN data");
 
 		// Make a HTTP request:
 		client.print("GET ");
@@ -379,7 +379,7 @@ int SendLogRequest(int bioID, int isLogin)
 			// from the server, read them and print them:
 			if (client.available()) {
 
-				Serial.println("Data arrived - GET is successful.");
+				//Serial.println("Data arrived - GET is successful.");
 				client.stop();
 
 				// Exit from the loop
@@ -389,8 +389,8 @@ int SendLogRequest(int bioID, int isLogin)
 			// if the server's disconnected, stop the client:
 			if (!client.connected()) {
 
-				Serial.println();
-				Serial.println("disconnecting.");
+				//Serial.println();
+				//Serial.println("disconnecting.");
 				client.stop();
 
 				hasData = 0;
@@ -400,14 +400,14 @@ int SendLogRequest(int bioID, int isLogin)
 
 		} while (hasData);
 
-		Serial.println("Request was successful!");
+		//Serial.println("Request was successful!");
 
 		return 1;
 	}
 	else
 	{
 		// If the connection failed:
-		Serial.println("connection failed");
+		//Serial.println("connection failed");
 
 		return 0;
 	}
@@ -435,7 +435,7 @@ int CheckConnection()
 		// connection. Hopefully.
 
 
-		Serial.println("Client is Connected");
+		//Serial.println("Client is Connected");
 
 		// Make a HTTP request:
 		client.print("GET ");
@@ -457,7 +457,7 @@ int CheckConnection()
 			// from the server, read them and print them:
 			if (client.available()) {
 
-				Serial.println("Data arrived!");
+				//Serial.println("Data arrived!");
 				client.stop();
 
 				// Exit from the loop
@@ -467,8 +467,8 @@ int CheckConnection()
 			// if the server's disconnected, stop the client:
 			if (!client.connected()) {
 
-				Serial.println();
-				Serial.println("disconnecting.");
+				//Serial.println();
+				//Serial.println("disconnecting.");
 				client.stop();
 
 				hasData = 0;
@@ -478,14 +478,14 @@ int CheckConnection()
 
 		} while (hasData);
 
-		Serial.println("Connection is working!");
+		//Serial.println("Connection is working!");
 
 		return 1;
 	}
 	else 
 	{
 		// If the connection failed:
-		Serial.println("connection failed");
+		//Serial.println("connection failed");
 
 		return 0;
 	}
